@@ -4,19 +4,29 @@
 #include <editline/readline.h>
 #include <editline/history.h>
 
+#include "parser.h"
+
 int main(int argc, char** argv) 
 {
     puts("byolisp 0.0.1");
-    puts("ctrl+c to exit\n");
+    puts("ctrl+D to exit\n");
+
+    parser_grammar_t *grammar = parser_build_grammar();
     
-    while (1) {
-        char* input = readline("byolisp> ");
+    char *input;
+    while ((input = readline("byolisp> ")) != NULL) {
         add_history(input);
 
-        printf("echo: %s \n", input);
+        parser_result_t *result = parser_parse(input, grammar);
+        parser_report_output(result);
+        parser_free_result(result);
 
         free(input);
     }
+
+    puts("\nexit\n");
+
+    parser_free_grammar(grammar);
 
     return 0;
 }

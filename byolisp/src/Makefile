@@ -1,16 +1,16 @@
 IDIR =../include
 CC=gcc
-CFLAGS= -std=c99 -I$(IDIR)
+CFLAGS= -ggdb -std=c99 -I$(IDIR)
 
 ODIR=../obj
 LDIR =../lib
 
-LIBS=-ledit
+LIBS=-ledit -lm
 
-_DEPS = hello_make.h
+_DEPS = mpc.h parser.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = hello_func.o repl.o
+_OBJ = mpc.o parser.o repl.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS) | $(ODIR)
