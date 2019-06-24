@@ -1,0 +1,1 @@
+docker run --rm -v "$PWD/src":/home/groovy/scripts -w /home/groovy/scripts groovy:jdk8 groovy REPL.groovy
