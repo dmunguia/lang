@@ -5,6 +5,7 @@
 #include <editline/history.h>
 
 #include "parser.h"
+#include "evaluator.h"
 
 int main(int argc, char** argv) 
 {
@@ -18,7 +19,9 @@ int main(int argc, char** argv)
         add_history(input);
 
         parser_result_t *result = parser_parse(input, grammar);
-        parser_report_output(result);
+        //parser_report_output(result);
+        long value = evaluator_evaluate(result->result_data->output);
+        printf("%li\n", value);
         parser_free_result(result);
 
         free(input);
