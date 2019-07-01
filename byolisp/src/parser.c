@@ -14,7 +14,7 @@ parser_grammar_t* parser_build_grammar()
 
     mpca_lang(MPCA_LANG_DEFAULT,
         "                                                       \
-            number   : /-?[0-9]+/ ;                             \
+            number   : /-?[0-9]+(\\.[0-9]*)?/ ;                             \
             operator : '+' | '-' | '*' | '/' | \"max\" | \"min\" | '%' | '^' ;\
             expr     : <number> | '(' <operator> <expr>+ ')' ;  \
             byolisp  : /^/ <operator> <expr>+ /$/ ;             \

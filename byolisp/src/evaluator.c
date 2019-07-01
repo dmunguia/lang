@@ -1,48 +1,75 @@
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "builtins.h"
 #include "evaluator.h"
-
-static long evaluator_builtin_min(long operand_a, long operand_b)
-{
-    return (operand_a < operand_b) ? operand_a : operand_b;
-}
-
-static long evaluator_builtin_max(long operand_a, long operand_b)
-{
-    return (operand_a > operand_b) ? operand_a : operand_b;
-}
-
-static long evaluator_builtin_ipow(long base, long exp)
-{
-    long result = 1;
-    for (;;) {
-        if (exp & 1) {
-            result *= base;
-        }
-        exp >>= 1;
-        if (!exp) {
-            break;
-        }
-        base *= base;
-    }
-
-    return result;
-}
-
-static double evaluator_builtin_fpow(double base, double exp) 
-{
-    return pow(base, exp);
-}
 
 static lval_t evaluator_evaluate_number(mpc_ast_t *ast) 
 {
-    errno = 0; // macro
-    long number = strtol(ast->contents, NULL, 10);
-    return errno != ERANGE ? 
-        evaluator_lval_inum_new(number) : 
-        evaluator_lval_err_new(LVAL_ERR_NUM_TOO_LARGE);
+    if (strstr(ast->contents, ".")) {
+        double number = strtod(ast->contents, NULL);
+        return errno != ERANGE ? 
+            evaluator_lval_fnum_new(number) : 
+            evaluator_lval_err_new(LVAL_ERR_NUM_TOO_LARGE);
+    } else {
+        errno = 0; // macro
+        long number = strtol(ast->contents, NULL, 10);
+        return errno != ERANGE ? 
+            evaluator_lval_inum_new(number) : 
+            evaluator_lval_err_new(LVAL_ERR_NUM_TOO_LARGE);
+    }
+}
+
+static lval_t evaluator_evaluate_integer_operation(char *operator, long a, long b) 
+{
+
+    if (strcmp(operator, "+") == 0) { return evaluator_lval_inum_new(a + b); }
+    if (strcmp(operator, "-") == 0) { return evaluator_lval_inum_new(a - b); }
+    if (strcmp(operator, "*") == 0) { return evaluator_lval_inum_new(a * b); }
+    if (strcmp(operator, "%") == 0) { return evaluator_lval_inum_new(a % b); }
+    if (strcmp(operator, "min") == 0) { return evaluator_lval_inum_new(builtin_imin(a, b)); }
+    if (strcmp(operator, "max") == 0) { return evaluator_lval_inum_new(builtin_imax(a, b)); }
+    if (strcmp(operator, "neg") == 0) { return evaluator_lval_inum_new(-1 * a); }
+
+    if (strcmp(operator, "/") == 0) { 
+        return b == 0 ?
+            evaluator_lval_err_new(LVAL_ERR_DIV_ZERO) :
+            evaluator_lval_inum_new(a / b);
+    }
+
+    if (strcmp(operator, "^") == 0) { 
+        return b < 0 ?
+            evaluator_lval_err_new(LVAL_ERR_NEG_EXP) :
+            evaluator_lval_inum_new(builtin_ipow(a, b)); 
+    }
+
+    return evaluator_lval_err_new(LVAL_ERR_UNKNOWN_OP);
+}
+
+static lval_t evaluator_evaluate_fp_operation(char *operator, double a, double b) 
+{
+
+    if (strcmp(operator, "+") == 0) { return evaluator_lval_fnum_new(a + b); }
+    if (strcmp(operator, "-") == 0) { return evaluator_lval_fnum_new(a - b); }
+    if (strcmp(operator, "*") == 0) { return evaluator_lval_fnum_new(a * b); }
+    if (strcmp(operator, "%") == 0) { return evaluator_lval_fnum_new(fmod(a, b)); }
+    if (strcmp(operator, "min") == 0) { return evaluator_lval_fnum_new(builtin_fmin(a, b)); }
+    if (strcmp(operator, "max") == 0) { return evaluator_lval_fnum_new(builtin_fmax(a, b)); }
+    if (strcmp(operator, "neg") == 0) { return evaluator_lval_fnum_new(-1 * a); }
+
+    if (strcmp(operator, "/") == 0) { 
+        return b == 0 ?
+            evaluator_lval_err_new(LVAL_ERR_DIV_ZERO) :
+            evaluator_lval_fnum_new(a / b);
+    }
+
+    if (strcmp(operator, "^") == 0) { 
+        return b < 0 ?
+            evaluator_lval_err_new(LVAL_ERR_NEG_EXP) :
+            evaluator_lval_fnum_new(builtin_fpow(a, b)); 
+    }
+
+    return evaluator_lval_err_new(LVAL_ERR_UNKNOWN_OP);
 }
 
 static lval_t evaluator_evaluate_operator(char *operator, lval_t operand_a, lval_t operand_b)
@@ -55,37 +82,47 @@ static lval_t evaluator_evaluate_operator(char *operator, lval_t operand_a, lval
         return operand_b;
     }
 
-    long a = operand_a.value.integer_value;
-    long b = operand_b.value.integer_value;
+    // cast long to double when the expression mixes number types
+    if (operand_a.type == LVAL_TYPE_FNUM && operand_b.type == LVAL_TYPE_INUM) {
+        long ivalue = operand_b.value.integer_value;
+        operand_b.value.double_value = (double) ivalue;
+        operand_b.type = LVAL_TYPE_FNUM;
 
-    if (strcmp(operator, "+") == 0) { return evaluator_lval_inum_new(a + b); }
-    if (strcmp(operator, "-") == 0) { return evaluator_lval_inum_new(a - b); }
-    if (strcmp(operator, "*") == 0) { return evaluator_lval_inum_new(a * b); }
-    if (strcmp(operator, "%") == 0) { return evaluator_lval_inum_new(a % b); }
-    if (strcmp(operator, "min") == 0) { return evaluator_lval_inum_new(evaluator_builtin_min(a, b)); }
-    if (strcmp(operator, "max") == 0) { return evaluator_lval_inum_new(evaluator_builtin_max(a, b)); }
-    if (strcmp(operator, "neg") == 0) { return evaluator_lval_inum_new(-1 * a); }
-
-    if (strcmp(operator, "/") == 0) { 
-        return b == 0 ?
-            evaluator_lval_err_new(LVAL_ERR_DIV_ZERO) :
-            evaluator_lval_inum_new(a / b);
+    } else if (operand_a.type == LVAL_TYPE_INUM && operand_b.type == LVAL_TYPE_FNUM) {
+        long ivalue = operand_a.value.integer_value;
+        operand_a.value.double_value = (double) ivalue;
+        operand_a.type = LVAL_TYPE_FNUM;
     }
 
-    if (strcmp(operator, "^") == 0) { 
-        return b < 0 ?
-            evaluator_lval_err_new(LVAL_ERR_NEG_EXP) :
-            evaluator_lval_inum_new(evaluator_builtin_ipow(a, b)); 
+    if (operand_a.type == LVAL_TYPE_INUM) {
+        long a = operand_a.value.integer_value;
+        long b = operand_b.value.integer_value;
+
+        return evaluator_evaluate_integer_operation(operator, a, b);
+
+    } else {
+        double a = operand_a.value.double_value;
+        double b = operand_b.value.double_value;
+
+        return evaluator_evaluate_fp_operation(operator, a, b);
     }
 
-    return evaluator_lval_err_new(LVAL_ERR_UNKNOWN_OP);
 }
 
 lval_t evaluator_lval_inum_new(long num) 
 {
     lval_t val;
-    val.type = LVAL_TYPE_NUM;
+    val.type = LVAL_TYPE_INUM;
     val.value.integer_value = num;
+
+    return val;
+}
+
+lval_t evaluator_lval_fnum_new(double num) 
+{
+    lval_t val;
+    val.type = LVAL_TYPE_FNUM;
+    val.value.double_value = num;
 
     return val;
 }

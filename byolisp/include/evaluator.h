@@ -6,6 +6,7 @@
 typedef union {
     int err_code;
     long integer_value;
+    double double_value;
 } lval_value_t;
 
 typedef struct {
@@ -14,7 +15,8 @@ typedef struct {
 } lval_t;
 
 enum {
-    LVAL_TYPE_NUM,
+    LVAL_TYPE_INUM,
+    LVAL_TYPE_FNUM,
     LVAL_TYPE_ERR
 };
 
@@ -27,7 +29,7 @@ enum {
 
 lval_t evaluator_lval_inum_new(long num);
 lval_t evaluator_lval_fnum_new(double num);
-lval_t evaluator_lval_err_new(int err);
+lval_t evaluator_lval_err_new(int err_code);
 lval_t evaluator_evaluate(mpc_ast_t *ast);
 
 #endif // EVALUATOR_H

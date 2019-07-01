@@ -25,7 +25,8 @@ static void repl_lval_report_error(int err)
 static void repl_lval_print(lval_t lval) 
 {
     switch (lval.type) {
-        case LVAL_TYPE_NUM: printf("%li", lval.value.integer_value); break;
+        case LVAL_TYPE_INUM: printf("%li", lval.value.integer_value); break;
+        case LVAL_TYPE_FNUM: printf("%f", lval.value.double_value); break;
         case LVAL_TYPE_ERR: repl_lval_report_error(lval.value.err_code); break;
     }
 
