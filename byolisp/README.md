@@ -20,5 +20,5 @@ make
 On the project's root directory:
 
 ```bash
-byolisp
+bin/byolisp
 ```

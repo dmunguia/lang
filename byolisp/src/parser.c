@@ -3,9 +3,9 @@
 #include "mpc.h"
 #include "parser.h"
 
-parser_grammar_t* parser_build_grammar()
+parser_grammar_t parser_build_grammar()
 {
-    parser_grammar_t *grammar = malloc(sizeof(parser_grammar_t));
+    parser_grammar_t grammar;
 
     mpc_parser_t *Number = mpc_new("number");
     mpc_parser_t *Operator = mpc_new("operator");
@@ -21,44 +21,38 @@ parser_grammar_t* parser_build_grammar()
         ", 
         Number, Operator, Expr, BYOLisp, NULL);
 
-    grammar->Number = Number;
-    grammar->Operator = Operator;
-    grammar->Expr = Expr;
-    grammar->BYOLisp = BYOLisp;
+    grammar.Number = Number;
+    grammar.Operator = Operator;
+    grammar.Expr = Expr;
+    grammar.BYOLisp = BYOLisp;
 
     return grammar;
 }
 
-parser_result_t* parser_parse(const char *input, parser_grammar_t *grammar) 
+parser_result_t parser_parse(const char *input, parser_grammar_t grammar) 
 {
-    parser_result_t *result = malloc(sizeof(parser_result_t));
-    result->result_data = malloc(sizeof(mpc_result_t));
+    parser_result_t result;
+    mpc_result_t result_data;
 
-    int flag = mpc_parse("<stdin>", input, grammar->BYOLisp, result->result_data);
-    result->result_flag = flag;
+    int flag = mpc_parse("<stdin>", input, grammar.BYOLisp, &result_data);
+    result.result_flag = flag;
+    result.result_data = result_data;
 
     return result;
 }
 
-void parser_free_grammar(parser_grammar_t *grammar)
+void parser_free_grammar(parser_grammar_t grammar)
 {
-    mpc_cleanup(4, grammar->Number, grammar->Operator, grammar->Expr, grammar->BYOLisp);
-    free(grammar);
+    mpc_cleanup(4, grammar.Number, grammar.Operator, grammar.Expr, grammar.BYOLisp);
 }
 
-void parser_report_output(parser_result_t *result) 
+void parser_report_output(parser_result_t result) 
 {
-    if (result->result_flag != 0) {
-        mpc_ast_print(result->result_data->output);
-        mpc_ast_delete(result->result_data->output);
+    if (result.result_flag != 0) {
+        mpc_ast_print(result.result_data.output);
+        mpc_ast_delete(result.result_data.output);
     } else {
-        mpc_err_print(result->result_data->error);
-        mpc_err_delete(result->result_data->error);
+        mpc_err_print(result.result_data.error);
+        mpc_err_delete(result.result_data.error);
     }
-}
-
-void parser_free_result(parser_result_t *result)
-{
-    free(result->result_data);
-    free(result);
 }
