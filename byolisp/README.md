@@ -1,6 +1,6 @@
 # BYOLisp
 
-Small lisp implementation on C following buildyourownlisp.com. The objective of this exercise was to get familiarized with C programming best practices while building a toy project with fairly large complexity.
+Small lisp implementation on C following [buildyourownlisp.com](http://buildyourownlisp.com/contents). The objective of this exercise was to get familiarized with C programming best practices while building a toy project with fairly large complexity.
 
 ## Dependencies
 

@@ -59,5 +59,6 @@ void parser_report_output(parser_result_t *result)
 
 void parser_free_result(parser_result_t *result)
 {
+    free(result->result_data);
     free(result);
 }
