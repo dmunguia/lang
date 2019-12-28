@@ -1,5 +1,5 @@
-#ifndef EVALUATOR_H
-#define EVALUATOR_H
+#ifndef SEXPR_H
+#define SEXPR_H
 
 #include "mpc.h"
 
@@ -9,12 +9,14 @@ typedef union {
     char* symbol_value;
 } lval_value_t;
 
-typedef struct {
-    int count;
-    struct lval_t** cell;
-} lval_cell_t;
+struct lval_s;
 
 typedef struct {
+    int count;
+    struct lval_s** cell;
+} lval_cell_t;
+
+typedef struct lval_s {
     int type;
     int err_code;
     lval_value_t value;
@@ -36,12 +38,12 @@ enum {
     LVAL_ERR_NEG_EXP
 };
 
-lval_t* evaluator_lval_inum_new(long num);
-lval_t* evaluator_lval_fnum_new(double num);
-lval_t* evaluator_lval_sym_new(char* sym);
-lval_t* evaluator_lval_sexpr_new(void);
-lval_t* evaluator_lval_err_new(int err_code);
-void evaluator_lval_free(lval_t* val);
-lval_t* evaluator_evaluate(mpc_ast_t *ast);
+lval_t* sexpr_lval_inum_new(long num);
+lval_t* sexpr_lval_fnum_new(double num);
+lval_t* sexpr_lval_sym_new(char* sym);
+lval_t* sexpr_lval_sexpr_new(void);
+lval_t* sexpr_lval_err_new(int err_code);
+void sexpr_lval_free(lval_t* val);
+lval_t* sexpr_build_from_ast(mpc_ast_t *ast);
 
-#endif // EVALUATOR_H
+#endif // SEXPR_H

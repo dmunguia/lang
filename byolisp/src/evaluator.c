@@ -4,7 +4,7 @@
 #include "builtins.h"
 #include "evaluator.h"
 
-static lval_t evaluator_evaluate_number(mpc_ast_t *ast) 
+static lval_t* evaluator_evaluate_number(mpc_ast_t *ast) 
 {
     if (strstr(ast->contents, ".")) {
         double number = strtod(ast->contents, NULL);
@@ -109,34 +109,7 @@ static lval_t evaluator_evaluate_operator(char *operator, lval_t operand_a, lval
 
 }
 
-lval_t evaluator_lval_inum_new(long num) 
-{
-    lval_t val;
-    val.type = LVAL_TYPE_INUM;
-    val.value.integer_value = num;
-
-    return val;
-}
-
-lval_t evaluator_lval_fnum_new(double num) 
-{
-    lval_t val;
-    val.type = LVAL_TYPE_FNUM;
-    val.value.double_value = num;
-
-    return val;
-}
-
-lval_t evaluator_lval_err_new(int err_code) 
-{
-    lval_t val;
-    val.type = LVAL_TYPE_ERR;
-    val.value.err_code = err_code;
-
-    return val;
-}
-
-lval_t evaluator_evaluate(mpc_ast_t *ast)
+lval_t* evaluator_evaluate(mpc_ast_t *ast)
 {
     if (strstr(ast->tag, "number")) {
         return evaluator_evaluate_number(ast);

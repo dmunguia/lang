@@ -5,7 +5,8 @@
 
 typedef struct {
     mpc_parser_t *Number;
-    mpc_parser_t *Operator;
+    mpc_parser_t *Symbol;
+    mpc_parser_t *SExpr;
     mpc_parser_t *Expr;
     mpc_parser_t *BYOLisp;
 } parser_grammar_t;

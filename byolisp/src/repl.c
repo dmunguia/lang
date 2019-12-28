@@ -5,7 +5,9 @@
 #include <editline/history.h>
 
 #include "parser.h"
-#include "evaluator.h"
+#include "sexpr.h"
+
+static void repl_lval_print(lval_t* lval);
 
 static void repl_lval_report_error(int err) 
 {
@@ -22,14 +24,33 @@ static void repl_lval_report_error(int err)
     }
 }
 
-static void repl_lval_print(lval_t lval) 
+static void repl_lval_sexpr_print(lval_t *lval, char open, char close)
 {
-    switch (lval.type) {
-        case LVAL_TYPE_INUM: printf("%li", lval.value.integer_value); break;
-        case LVAL_TYPE_FNUM: printf("%f", lval.value.double_value); break;
-        case LVAL_TYPE_ERR: repl_lval_report_error(lval.value.err_code); break;
-    }
+    putchar(open);
+    for (int i = 0; i < lval->cells.count; i++) {
+        repl_lval_print(lval->cells.cell[i]);
 
+        if (i < (lval->cells.count - 1)) {
+            putchar(' ');
+        }
+    }
+    putchar(close);
+}
+
+static void repl_lval_print(lval_t *lval) 
+{
+    switch (lval->type) {
+        case LVAL_TYPE_INUM: printf("%li", lval->value.integer_value); break;
+        case LVAL_TYPE_FNUM: printf("%f", lval->value.double_value); break;
+        case LVAL_TYPE_SYM: printf("%s", lval->value.symbol_value); break;
+        case LVAL_TYPE_SEXPR: repl_lval_sexpr_print(lval, '(', ')'); break;
+        case LVAL_TYPE_ERR: repl_lval_report_error(lval->err_code); break;
+    }
+}
+
+static void repl_lval_println(lval_t *lval)
+{
+    repl_lval_print(lval);
     putchar('\n');
 }
 
@@ -46,8 +67,12 @@ int main(int argc, char** argv)
 
         parser_result_t result = parser_parse(input, grammar);
         //parser_report_output(result);
-        lval_t value = evaluator_evaluate(result.result_data.output);
-        repl_lval_print(value);
+        //lval_t value = evaluator_evaluate(result.result_data.output);
+        //repl_lval_print(value);
+
+        lval_t *lval = sexpr_build_from_ast(result.result_data.output);
+        repl_lval_println(lval);
+        sexpr_lval_free(lval);
 
         free(input);
     }

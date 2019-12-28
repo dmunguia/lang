@@ -8,21 +8,24 @@ parser_grammar_t parser_build_grammar()
     parser_grammar_t grammar;
 
     mpc_parser_t *Number = mpc_new("number");
-    mpc_parser_t *Operator = mpc_new("operator");
+    mpc_parser_t *Symbol = mpc_new("symbol");
+    mpc_parser_t *SExpr = mpc_new("sexpr");
     mpc_parser_t *Expr = mpc_new("expr");
     mpc_parser_t *BYOLisp = mpc_new("byolisp");
 
     mpca_lang(MPCA_LANG_DEFAULT,
-        "                                                       \
-            number   : /-?[0-9]+(\\.[0-9]*)?/ ;                             \
-            operator : '+' | '-' | '*' | '/' | \"max\" | \"min\" | '%' | '^' ;\
-            expr     : <number> | '(' <operator> <expr>+ ')' ;  \
-            byolisp  : /^/ <operator> <expr>+ /$/ ;             \
+        "                                                                    \
+            number : /-?[0-9]+(\\.[0-9]*)?/ ;                                \
+            symbol : '+' | '-' | '*' | '/' | \"max\" | \"min\" | '%' | '^' ; \
+            sexpr  : '(' <expr>* ')' ;                                       \
+            expr   : <number> | <symbol> | <sexpr> ;                         \
+            byolisp: /^/ <expr>* /$/ ;                                       \
         ", 
-        Number, Operator, Expr, BYOLisp, NULL);
+        Number, Symbol, SExpr, Expr, BYOLisp, NULL);
 
     grammar.Number = Number;
-    grammar.Operator = Operator;
+    grammar.Symbol = Symbol;
+    grammar.SExpr = SExpr;
     grammar.Expr = Expr;
     grammar.BYOLisp = BYOLisp;
 
@@ -43,7 +46,7 @@ parser_result_t parser_parse(const char *input, parser_grammar_t grammar)
 
 void parser_free_grammar(parser_grammar_t grammar)
 {
-    mpc_cleanup(4, grammar.Number, grammar.Operator, grammar.Expr, grammar.BYOLisp);
+    mpc_cleanup(5, grammar.Number, grammar.Symbol, grammar.SExpr, grammar.Expr, grammar.BYOLisp);
 }
 
 void parser_report_output(parser_result_t result) 
