@@ -101,6 +101,28 @@ void sexpr_lval_free(lval_t* val)
     free(val);
 }
 
+lval_t* sexpr_lval_pop(lval_t *lval, int i)
+{
+    lval_t *ith = lval->cells.cell[i];
+
+    memmove(&lval->cells.cell[i], &lval->cells.cell[i+1],
+        sizeof(lval_t*) * (lval->cells.count-i-1));
+
+    lval->cells.count--;
+
+    lval->cells.cell = realloc(lval->cells.cell, sizeof(lval_t*) * lval->cells.count);
+
+    return ith;
+}
+
+lval_t* sexpr_lval_take(lval_t *lval, int i)
+{
+    lval_t *ith = sexpr_lval_pop(lval, i);
+    sexpr_lval_free(lval);
+
+    return ith;
+}
+
 lval_t* sexpr_build_from_ast(mpc_ast_t *ast)
 {
     if (strstr(ast->tag, "number")) {

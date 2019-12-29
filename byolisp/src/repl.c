@@ -4,6 +4,7 @@
 #include <editline/readline.h>
 #include <editline/history.h>
 
+#include "evaluator.h"
 #include "parser.h"
 #include "sexpr.h"
 
@@ -19,6 +20,10 @@ static void repl_lval_report_error(int err)
         printf("Error: number too large");
     } else if (err == LVAL_ERR_NEG_EXP) {
         printf("Error: exponent can't be negative");
+    } else if (err == LVAL_ERR_SEXPR_MUST_START_WITH_SYMBOL) {
+        printf("Error: S-expression does not start with symbol");
+    } else if (err == LVAL_ERR_MISMATCH_DATATYPE) {
+        printf("Error: invalid data types for operation");
     } else {
         printf("Error: unknown error code %i", err);
     }
@@ -66,11 +71,8 @@ int main(int argc, char** argv)
         add_history(input);
 
         parser_result_t result = parser_parse(input, grammar);
-        //parser_report_output(result);
-        //lval_t value = evaluator_evaluate(result.result_data.output);
-        //repl_lval_print(value);
-
         lval_t *lval = sexpr_build_from_ast(result.result_data.output);
+        lval = evaluator_evaluate(lval);
         repl_lval_println(lval);
         sexpr_lval_free(lval);
 
