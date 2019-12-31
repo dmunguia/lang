@@ -49,6 +49,7 @@ static void repl_lval_print(lval_t *lval)
         case LVAL_TYPE_FNUM: printf("%f", lval->value.double_value); break;
         case LVAL_TYPE_SYM: printf("%s", lval->value.symbol_value); break;
         case LVAL_TYPE_SEXPR: repl_lval_sexpr_print(lval, '(', ')'); break;
+        case LVAL_TYPE_QEXPR: repl_lval_sexpr_print(lval, '{', '}'); break;
         case LVAL_TYPE_ERR: repl_lval_report_error(lval->err_code); break;
     }
 }

@@ -10,6 +10,7 @@ parser_grammar_t parser_build_grammar()
     mpc_parser_t *Number = mpc_new("number");
     mpc_parser_t *Symbol = mpc_new("symbol");
     mpc_parser_t *SExpr = mpc_new("sexpr");
+    mpc_parser_t *QExpr = mpc_new("qexpr");
     mpc_parser_t *Expr = mpc_new("expr");
     mpc_parser_t *BYOLisp = mpc_new("byolisp");
 
@@ -18,14 +19,16 @@ parser_grammar_t parser_build_grammar()
             number : /-?[0-9]+(\\.[0-9]*)?/ ;                                \
             symbol : '+' | '-' | '*' | '/' | \"max\" | \"min\" | '%' | '^' ; \
             sexpr  : '(' <expr>* ')' ;                                       \
-            expr   : <number> | <symbol> | <sexpr> ;                         \
+            qexpr  : '{' <expr>* '}' ;                                       \
+            expr   : <number> | <symbol> | <sexpr> | <qexpr> ;               \
             byolisp: /^/ <expr>* /$/ ;                                       \
         ", 
-        Number, Symbol, SExpr, Expr, BYOLisp, NULL);
+        Number, Symbol, SExpr, QExpr, Expr, BYOLisp, NULL);
 
     grammar.Number = Number;
     grammar.Symbol = Symbol;
     grammar.SExpr = SExpr;
+    grammar.QExpr = QExpr;
     grammar.Expr = Expr;
     grammar.BYOLisp = BYOLisp;
 
@@ -46,7 +49,7 @@ parser_result_t parser_parse(const char *input, parser_grammar_t grammar)
 
 void parser_free_grammar(parser_grammar_t grammar)
 {
-    mpc_cleanup(5, grammar.Number, grammar.Symbol, grammar.SExpr, grammar.Expr, grammar.BYOLisp);
+    mpc_cleanup(6, grammar.Number, grammar.Symbol, grammar.SExpr, grammar.QExpr, grammar.Expr, grammar.BYOLisp);
 }
 
 void parser_report_output(parser_result_t result) 

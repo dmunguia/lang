@@ -70,6 +70,16 @@ lval_t* sexpr_lval_sexpr_new(void)
     return val;
 }
 
+lval_t* sexpr_lval_qexpr_new(void)
+{
+    lval_t* val = malloc(sizeof(lval_t));
+    val->type = LVAL_TYPE_QEXPR;
+    val->cells.count = 0;
+    val->cells.cell = NULL;
+
+    return val;
+}
+
 lval_t* sexpr_lval_err_new(int err_code) 
 {
     lval_t* val = malloc(sizeof(lval_t));
@@ -87,6 +97,7 @@ void sexpr_lval_free(lval_t* val)
             break;
         
         case LVAL_TYPE_SEXPR:
+        case LVAL_TYPE_QEXPR:
             for (int i = 0; i < val->cells.count; i++) {
                 sexpr_lval_free(val->cells.cell[i]);
             }
@@ -142,9 +153,15 @@ lval_t* sexpr_build_from_ast(mpc_ast_t *ast)
         lval = sexpr_lval_sexpr_new();
     }
 
+    if (strstr(ast->tag, "qexpr")) {
+        lval = sexpr_lval_qexpr_new();
+    }
+
     for (int i = 0; i < ast->children_num; i++) {
         if ((strcmp(ast->children[i]->contents, "(") != 0) &&
             (strcmp(ast->children[i]->contents, ")") != 0) &&
+            (strcmp(ast->children[i]->contents, "{") != 0) &&
+            (strcmp(ast->children[i]->contents, "}") != 0) &&
             (strcmp(ast->children[i]->tag, "regex") != 0)) {
             lval = sexpr_push_lval(lval, sexpr_build_from_ast(ast->children[i]));
         }
