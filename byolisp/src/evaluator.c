@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "builtins.h"
+#include "builtins_qexpr.h"
 #include "evaluator.h"
 #include "sexpr.h"
 
@@ -133,6 +134,32 @@ static lval_t* evaluator_evaluate_operator(char *operator, lval_t *operands)
     return operand_a;
 }
 
+static lval_t* evaluator_evaluate_function(char *func, lval_t *lval) {
+    lval_t *result = NULL;
+    if (strcmp("list", func) == 0) {
+        result = builtin_qexpr_list(lval);
+    } else if (strcmp("head", func) == 0) {
+        result = builtin_qexpr_head(lval);
+    } else if (strcmp("tail", func) == 0) {
+        result = builtin_qexpr_tail(lval);
+    } else if (strcmp("join", func) == 0) {
+        result = builtin_qexpr_join(lval);
+    } else if (strcmp("eval", func) == 0) {
+        result = builtin_qexpr_eval(lval);
+    } else if (strcmp("min", func) == 0 ||
+               strcmp("max", func) == 0 ||
+               strstr("+-*/%^", func)) {
+        result = evaluator_evaluate_operator(func, lval);
+    }
+
+    if (result == NULL) {
+        result = sexpr_lval_err_new(LVAL_ERR_UNKNOWN_OP);
+        sexpr_lval_free(lval);
+    }
+
+    return result;
+}
+
 static lval_t* evaluator_evaluate_sexpr(lval_t *lval)
 {
     for (int i = 0; i < lval->cells.count; i++) {
@@ -160,7 +187,7 @@ static lval_t* evaluator_evaluate_sexpr(lval_t *lval)
         return sexpr_lval_err_new(LVAL_ERR_SEXPR_MUST_START_WITH_SYMBOL);
     }
 
-    lval_t *result = evaluator_evaluate_operator(symbol->value.symbol_value, lval);
+    lval_t *result = evaluator_evaluate_function(symbol->value.symbol_value, lval);
     sexpr_lval_free(symbol);
 
     return result;

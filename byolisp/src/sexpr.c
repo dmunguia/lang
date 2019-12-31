@@ -24,14 +24,6 @@ static lval_t* sexpr_ast_to_symbol(mpc_ast_t *ast)
     return sexpr_lval_sym_new(ast->contents);
 }
 
-static lval_t* sexpr_push_lval(lval_t *list, lval_t *new)
-{
-    list->cells.count++;
-    list->cells.cell = realloc(list->cells.cell, sizeof(lval_t*) * list->cells.count);
-    list->cells.cell[list->cells.count - 1] = new;
-    return list;
-}
-
 lval_t* sexpr_lval_inum_new(long num) 
 {
     lval_t* val = malloc(sizeof(lval_t));
@@ -112,6 +104,14 @@ void sexpr_lval_free(lval_t* val)
     free(val);
 }
 
+lval_t* sexpr_lval_push(lval_t *lval, lval_t *new)
+{
+    lval->cells.count++;
+    lval->cells.cell = realloc(lval->cells.cell, sizeof(lval_t*) * lval->cells.count);
+    lval->cells.cell[lval->cells.count - 1] = new;
+    return lval;
+}
+
 lval_t* sexpr_lval_pop(lval_t *lval, int i)
 {
     lval_t *ith = lval->cells.cell[i];
@@ -132,6 +132,16 @@ lval_t* sexpr_lval_take(lval_t *lval, int i)
     sexpr_lval_free(lval);
 
     return ith;
+}
+
+lval_t* sexpr_lval_join(lval_t *a, lval_t *b) {
+    while(b->cells.count > 0) {
+        a = sexpr_lval_push(a, sexpr_lval_pop(b, 0));
+    }
+
+    sexpr_lval_free(b);
+
+    return a;
 }
 
 lval_t* sexpr_build_from_ast(mpc_ast_t *ast)
@@ -163,7 +173,7 @@ lval_t* sexpr_build_from_ast(mpc_ast_t *ast)
             (strcmp(ast->children[i]->contents, "{") != 0) &&
             (strcmp(ast->children[i]->contents, "}") != 0) &&
             (strcmp(ast->children[i]->tag, "regex") != 0)) {
-            lval = sexpr_push_lval(lval, sexpr_build_from_ast(ast->children[i]));
+            lval = sexpr_lval_push(lval, sexpr_build_from_ast(ast->children[i]));
         }
     }
 

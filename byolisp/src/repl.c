@@ -15,7 +15,7 @@ static void repl_lval_report_error(int err)
     if (err == LVAL_ERR_DIV_ZERO) {
         printf("Error: division by zero");
     } else if (err == LVAL_ERR_UNKNOWN_OP) {
-        printf("Error: unknown operator");
+        printf("Error: unknown function");
     } else if (err == LVAL_ERR_NUM_TOO_LARGE) {
         printf("Error: number too large");
     } else if (err == LVAL_ERR_NEG_EXP) {
@@ -23,7 +23,11 @@ static void repl_lval_report_error(int err)
     } else if (err == LVAL_ERR_SEXPR_MUST_START_WITH_SYMBOL) {
         printf("Error: S-expression does not start with symbol");
     } else if (err == LVAL_ERR_MISMATCH_DATATYPE) {
-        printf("Error: invalid data types for operation");
+        printf("Error: invalid data types for function");
+    } else if (err == LVAL_ERR_TOO_MANY_ARGS_PASSED) {
+        printf("Error: too many args passed to function");
+    } else if (err == LVAL_ERR_NO_ARGS_PASSED) {
+        printf("Error: no args passed to function");
     } else {
         printf("Error: unknown error code %i", err);
     }
