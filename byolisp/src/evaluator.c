@@ -134,7 +134,8 @@ static lval_t* evaluator_evaluate_operator(char *operator, lval_t *operands)
     return operand_a;
 }
 
-static lval_t* evaluator_evaluate_function(char *func, lval_t *lval) {
+static lval_t* evaluator_evaluate_function(char *func, lval_t *lval) 
+{
     lval_t *result = NULL;
     if (strcmp("list", func) == 0) {
         result = builtin_qexpr_list(lval);
@@ -201,4 +202,3 @@ lval_t* evaluator_evaluate(lval_t *lval)
 
     return lval;
 }
-

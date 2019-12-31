@@ -3,7 +3,8 @@
 #include "builtins_qexpr.h"
 
 
-lval_t* builtin_qexpr_head(lval_t *lval) {
+lval_t* builtin_qexpr_head(lval_t *lval) 
+{
     QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->cells.count > 0, LVAL_ERR_NO_ARGS_PASSED);
@@ -16,7 +17,8 @@ lval_t* builtin_qexpr_head(lval_t *lval) {
     return head;
 }
 
-lval_t* builtin_qexpr_tail(lval_t *lval) {
+lval_t* builtin_qexpr_tail(lval_t *lval) 
+{
     QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->cells.count > 0, LVAL_ERR_NO_ARGS_PASSED);
@@ -27,12 +29,14 @@ lval_t* builtin_qexpr_tail(lval_t *lval) {
     return tail;
 }
 
-lval_t* builtin_qexpr_list(lval_t *lval) {
+lval_t* builtin_qexpr_list(lval_t *lval) 
+{
     lval->type = LVAL_TYPE_QEXPR;
     return lval;
 }
 
-lval_t* builtin_qexpr_eval(lval_t *lval) {
+lval_t* builtin_qexpr_eval(lval_t *lval) 
+{
     QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
 
@@ -41,7 +45,8 @@ lval_t* builtin_qexpr_eval(lval_t *lval) {
     return evaluator_evaluate(sexpr);
 }
 
-lval_t* builtin_qexpr_join(lval_t *lval) {
+lval_t* builtin_qexpr_join(lval_t *lval) 
+{
     for (int i = 0; i < lval->cells.count; i++) {
         QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     }
