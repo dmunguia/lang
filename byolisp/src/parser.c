@@ -18,7 +18,8 @@ parser_grammar_t parser_build_grammar()
         "                                                                    \
             number : /-?[0-9]+(\\.[0-9]*)?/ ;                                \
             symbol : '+' | '-' | '*' | '/' | \"max\" | \"min\" | '%' | '^' | \
-                     \"list\" | \"head\" | \"tail\" | \"join\" | \"eval\" ;  \
+                     \"list\" | \"head\" | \"tail\" | \"join\" | \"eval\" |  \
+                     \"cons\" | \"len\" | \"init\" ;                         \
             sexpr  : '(' <expr>* ')' ;                                       \
             qexpr  : '{' <expr>* '}' ;                                       \
             expr   : <number> | <symbol> | <sexpr> | <qexpr> ;               \

@@ -48,7 +48,7 @@ lval_t* builtin_qexpr_eval(lval_t *lval)
 lval_t* builtin_qexpr_join(lval_t *lval) 
 {
     for (int i = 0; i < lval->cells.count; i++) {
-        QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
+        QEXPR_ASSERT(lval, lval->cells.cell[i]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     }
 
     lval_t *joined = sexpr_lval_pop(lval, 0);
@@ -59,4 +59,48 @@ lval_t* builtin_qexpr_join(lval_t *lval)
     sexpr_lval_free(lval);
 
     return joined;
+}
+
+lval_t* builtin_qexpr_cons(lval_t *lval)
+{
+    QEXPR_ASSERT(lval, lval->cells.count == 2, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.cell[0]->type != LVAL_TYPE_SEXPR, LVAL_ERR_MISMATCH_DATATYPE);
+    QEXPR_ASSERT(lval, lval->cells.cell[1]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
+
+    lval_t *new = sexpr_lval_pop(lval, 0);
+    lval_t *new_qexpr = sexpr_lval_qexpr_new();
+    sexpr_lval_push(new_qexpr, new);
+
+    lval_t *qexpr = sexpr_lval_pop(lval, 0);
+    sexpr_lval_join(new_qexpr, qexpr);
+
+    sexpr_lval_free(lval);
+
+    return new_qexpr;
+}
+
+lval_t* builtin_qexpr_len(lval_t *lval)
+{
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
+
+    lval_t *qexpr = sexpr_lval_pop(lval, 0);
+    
+    sexpr_lval_free(lval);
+
+    return sexpr_lval_inum_new(qexpr->cells.count);
+}
+
+lval_t* builtin_qexpr_init(lval_t *lval)
+{
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
+
+    lval_t *qexpr = sexpr_lval_pop(lval, 0);
+    
+    sexpr_lval_free(lval);
+
+    sexpr_lval_pop(qexpr, qexpr->cells.count - 1);
+
+    return qexpr;
 }

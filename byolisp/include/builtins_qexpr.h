@@ -11,5 +11,8 @@ lval_t* builtin_qexpr_tail(lval_t *lval);
 lval_t* builtin_qexpr_list(lval_t *lval);
 lval_t* builtin_qexpr_eval(lval_t *lval);
 lval_t* builtin_qexpr_join(lval_t *lval);
+lval_t* builtin_qexpr_cons(lval_t *lval);
+lval_t* builtin_qexpr_len(lval_t *lval);
+lval_t* builtin_qexpr_init(lval_t *lval);
 
 #endif // BUILTINS_QEXPR_H

@@ -147,6 +147,12 @@ static lval_t* evaluator_evaluate_function(char *func, lval_t *lval)
         result = builtin_qexpr_join(lval);
     } else if (strcmp("eval", func) == 0) {
         result = builtin_qexpr_eval(lval);
+    } else if (strcmp("cons", func) == 0) {
+        result = builtin_qexpr_cons(lval);
+    } else if (strcmp("len", func) == 0) {
+        result = builtin_qexpr_len(lval);
+    } else if (strcmp("init", func) == 0) {
+        result = builtin_qexpr_init(lval);
     } else if (strcmp("min", func) == 0 ||
                strcmp("max", func) == 0 ||
                strstr("+-*/%^", func)) {
