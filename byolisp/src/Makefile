@@ -7,10 +7,10 @@ LDIR =../lib
 
 LIBS=-ledit -lm
 
-_DEPS = mpc.h parser.h sexpr.h evaluator.h builtins.h builtins_qexpr.h
+_DEPS = mpc.h parser.h sexpr.h lenv.h evaluator.h builtins.h builtins_qexpr.h builtins_arith.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = mpc.o parser.o sexpr.o evaluator.o builtins.o builtins_qexpr.o repl.o
+_OBJ = mpc.o parser.o sexpr.o lenv.o evaluator.o builtins.o builtins_qexpr.o builtins_arith.o repl.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS) | $(ODIR)

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "sexpr.h"
+#include "lenv.h"
 
 static lval_t* sexpr_ast_to_number(mpc_ast_t *ast) 
 {
@@ -48,6 +49,15 @@ lval_t* sexpr_lval_sym_new(char* sym)
     val->type = LVAL_TYPE_SYM;
     val->value.symbol_value = malloc(strlen(sym) + 1);
     strcpy(val->value.symbol_value, sym);
+
+    return val;
+}
+
+lval_t* sexpr_lval_funptr_new(lbuiltin funptr)
+{
+    lval_t *val = malloc(sizeof(lval_t));
+    val->type = LVAL_TYPE_FUN;
+    val->value.funptr_value = funptr;
 
     return val;
 }
@@ -134,7 +144,8 @@ lval_t* sexpr_lval_take(lval_t *lval, int i)
     return ith;
 }
 
-lval_t* sexpr_lval_join(lval_t *a, lval_t *b) {
+lval_t* sexpr_lval_join(lval_t *a, lval_t *b) 
+{
     while(b->cells.count > 0) {
         a = sexpr_lval_push(a, sexpr_lval_pop(b, 0));
     }
@@ -142,6 +153,34 @@ lval_t* sexpr_lval_join(lval_t *a, lval_t *b) {
     sexpr_lval_free(b);
 
     return a;
+}
+
+lval_t* sexpr_lval_copy(lval_t *lval)
+{
+    lval_t *copy = malloc(sizeof(lval_t));
+    copy->type = lval->type;
+
+    switch(lval->type) {
+        case LVAL_TYPE_INUM: copy->value.integer_value = lval->value.integer_value; break;
+        case LVAL_TYPE_FNUM: copy->value.double_value = lval->value.double_value; break;
+        case LVAL_TYPE_FUN: copy->value.funptr_value = lval->value.funptr_value; break;
+        case LVAL_TYPE_ERR: copy->err_code = lval->err_code; break;
+        case LVAL_TYPE_SYM:
+            copy->value.symbol_value = malloc(strlen(lval->value.symbol_value) + 1);
+            strcpy(copy->value.symbol_value, lval->value.symbol_value);
+            break;
+        
+        case LVAL_TYPE_SEXPR:
+        case LVAL_TYPE_QEXPR:
+            copy->cells.count = lval->cells.count;
+            copy->cells.cell = malloc(sizeof(lval_t*) * lval->cells.count);
+            for (int i = 0; i < lval->cells.count; i++) {
+                copy->cells.cell[i] = sexpr_lval_copy(lval->cells.cell[i]);
+            }
+            break;
+    }
+
+    return copy;
 }
 
 lval_t* sexpr_build_from_ast(mpc_ast_t *ast)

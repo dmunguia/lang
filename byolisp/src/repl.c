@@ -7,6 +7,7 @@
 #include "evaluator.h"
 #include "parser.h"
 #include "sexpr.h"
+#include "lenv.h"
 
 static void repl_lval_print(lval_t* lval);
 
@@ -20,14 +21,16 @@ static void repl_lval_report_error(int err)
         printf("Error: number too large");
     } else if (err == LVAL_ERR_NEG_EXP) {
         printf("Error: exponent can't be negative");
-    } else if (err == LVAL_ERR_SEXPR_MUST_START_WITH_SYMBOL) {
-        printf("Error: S-expression does not start with symbol");
+    } else if (err == LVAL_ERR_NOT_A_FUNCTION) {
+        printf("Error: not a function");
     } else if (err == LVAL_ERR_MISMATCH_DATATYPE) {
         printf("Error: invalid data types for function");
     } else if (err == LVAL_ERR_TOO_MANY_ARGS_PASSED) {
         printf("Error: too many args passed to function");
     } else if (err == LVAL_ERR_NO_ARGS_PASSED) {
         printf("Error: no args passed to function");
+    } else if (err == LVAL_ERR_UNBOUND_SYMBOL) {
+        printf("Error: unbound symbol");
     } else {
         printf("Error: unknown error code %i", err);
     }
@@ -51,6 +54,7 @@ static void repl_lval_print(lval_t *lval)
     switch (lval->type) {
         case LVAL_TYPE_INUM: printf("%li", lval->value.integer_value); break;
         case LVAL_TYPE_FNUM: printf("%f", lval->value.double_value); break;
+        case LVAL_TYPE_FUN: printf("<function %p>", lval->value.funptr_value); break;
         case LVAL_TYPE_SYM: printf("%s", lval->value.symbol_value); break;
         case LVAL_TYPE_SEXPR: repl_lval_sexpr_print(lval, '(', ')'); break;
         case LVAL_TYPE_QEXPR: repl_lval_sexpr_print(lval, '{', '}'); break;
@@ -66,6 +70,9 @@ static void repl_lval_println(lval_t *lval)
 
 int main(int argc, char** argv) 
 {
+    lenv_t* lenv = lenv_new();
+    lenv_add_builtins(lenv);
+
     puts("byolisp 0.0.1");
     puts("ctrl+D to exit\n");
 
@@ -77,7 +84,7 @@ int main(int argc, char** argv)
 
         parser_result_t result = parser_parse(input, grammar);
         lval_t *lval = sexpr_build_from_ast(result.result_data.output);
-        lval = evaluator_evaluate(lval);
+        lval = evaluator_evaluate(lenv, lval);
         repl_lval_println(lval);
         sexpr_lval_free(lval);
 
