@@ -5,7 +5,7 @@
 
 lval_t* builtin_qexpr_head(lenv_t* lenv, lval_t *lval) 
 {
-    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_INCORRECT_NUM_ARGS);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->cells.count > 0, LVAL_ERR_NO_ARGS_PASSED);
 
@@ -19,7 +19,7 @@ lval_t* builtin_qexpr_head(lenv_t* lenv, lval_t *lval)
 
 lval_t* builtin_qexpr_tail(lenv_t* lenv, lval_t *lval) 
 {
-    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_INCORRECT_NUM_ARGS);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->cells.count > 0, LVAL_ERR_NO_ARGS_PASSED);
 
@@ -37,7 +37,7 @@ lval_t* builtin_qexpr_list(lenv_t* lenv, lval_t *lval)
 
 lval_t* builtin_qexpr_eval(lenv_t* lenv, lval_t *lval) 
 {
-    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_INCORRECT_NUM_ARGS);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
 
     lval_t *sexpr = sexpr_lval_take(lval, 0);
@@ -63,7 +63,7 @@ lval_t* builtin_qexpr_join(lenv_t* lenv, lval_t *lval)
 
 lval_t* builtin_qexpr_cons(lenv_t* lenv, lval_t *lval)
 {
-    QEXPR_ASSERT(lval, lval->cells.count == 2, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.count == 2, LVAL_ERR_INCORRECT_NUM_ARGS);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type != LVAL_TYPE_SEXPR, LVAL_ERR_MISMATCH_DATATYPE);
     QEXPR_ASSERT(lval, lval->cells.cell[1]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
 
@@ -81,7 +81,7 @@ lval_t* builtin_qexpr_cons(lenv_t* lenv, lval_t *lval)
 
 lval_t* builtin_qexpr_len(lenv_t* lenv, lval_t *lval)
 {
-    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_INCORRECT_NUM_ARGS);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
 
     lval_t *qexpr = sexpr_lval_pop(lval, 0);
@@ -93,7 +93,7 @@ lval_t* builtin_qexpr_len(lenv_t* lenv, lval_t *lval)
 
 lval_t* builtin_qexpr_init(lenv_t* lenv, lval_t *lval)
 {
-    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_TOO_MANY_ARGS_PASSED);
+    QEXPR_ASSERT(lval, lval->cells.count == 1, LVAL_ERR_INCORRECT_NUM_ARGS);
     QEXPR_ASSERT(lval, lval->cells.cell[0]->type == LVAL_TYPE_QEXPR, LVAL_ERR_MISMATCH_DATATYPE);
 
     lval_t *qexpr = sexpr_lval_pop(lval, 0);

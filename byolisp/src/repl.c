@@ -25,8 +25,8 @@ static void repl_lval_report_error(int err)
         printf("Error: not a function");
     } else if (err == LVAL_ERR_MISMATCH_DATATYPE) {
         printf("Error: invalid data types for function");
-    } else if (err == LVAL_ERR_TOO_MANY_ARGS_PASSED) {
-        printf("Error: too many args passed to function");
+    } else if (err == LVAL_ERR_INCORRECT_NUM_ARGS) {
+        printf("Error: incorrect number of args passed to function");
     } else if (err == LVAL_ERR_NO_ARGS_PASSED) {
         printf("Error: no args passed to function");
     } else if (err == LVAL_ERR_UNBOUND_SYMBOL) {

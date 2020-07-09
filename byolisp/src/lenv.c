@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "builtins_arith.h"
+#include "builtins_lang.h"
 #include "builtins_qexpr.h"
 #include "lenv.h"
 #include "sexpr.h"
@@ -92,4 +93,6 @@ void lenv_add_builtins(lenv_t* lenv)
     lenv_add_builtin(lenv, "min", builtins_arith_min);
     lenv_add_builtin(lenv, "max", builtins_arith_max);
     lenv_add_builtin(lenv, "neg", builtins_arith_neg);
+
+    lenv_add_builtin(lenv, "def", builtins_lang_def);
 }

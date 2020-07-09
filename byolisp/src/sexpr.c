@@ -126,6 +126,8 @@ lval_t* sexpr_lval_pop(lval_t *lval, int i)
 {
     lval_t *ith = lval->cells.cell[i];
 
+    // take memory block from cell[i+1] to cells.count-1 and copy it
+    // to memory block starting on cell[i] (shift the whole block one to the left)
     memmove(&lval->cells.cell[i], &lval->cells.cell[i+1],
         sizeof(lval_t*) * (lval->cells.count-i-1));
 
