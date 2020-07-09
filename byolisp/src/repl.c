@@ -11,31 +11,6 @@
 
 static void repl_lval_print(lval_t* lval);
 
-static void repl_lval_report_error(int err) 
-{
-    if (err == LVAL_ERR_DIV_ZERO) {
-        printf("Error: division by zero");
-    } else if (err == LVAL_ERR_UNKNOWN_OP) {
-        printf("Error: unknown function");
-    } else if (err == LVAL_ERR_NUM_TOO_LARGE) {
-        printf("Error: number too large");
-    } else if (err == LVAL_ERR_NEG_EXP) {
-        printf("Error: exponent can't be negative");
-    } else if (err == LVAL_ERR_NOT_A_FUNCTION) {
-        printf("Error: not a function");
-    } else if (err == LVAL_ERR_MISMATCH_DATATYPE) {
-        printf("Error: invalid data types for function");
-    } else if (err == LVAL_ERR_INCORRECT_NUM_ARGS) {
-        printf("Error: incorrect number of args passed to function");
-    } else if (err == LVAL_ERR_NO_ARGS_PASSED) {
-        printf("Error: no args passed to function");
-    } else if (err == LVAL_ERR_UNBOUND_SYMBOL) {
-        printf("Error: unbound symbol");
-    } else {
-        printf("Error: unknown error code %i", err);
-    }
-}
-
 static void repl_lval_sexpr_print(lval_t *lval, char open, char close)
 {
     putchar(open);
