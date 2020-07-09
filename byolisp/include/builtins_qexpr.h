@@ -3,8 +3,12 @@
 
 #include "sexpr.h"
 
-#define QEXPR_ASSERT(args, cond, err) \
-  if (!(cond)) { sexpr_lval_free(args); return sexpr_lval_err_new(err); }
+#define QEXPR_ASSERT(args, cond, fmt, ...) \
+  if (!(cond)) { \
+    lval_t* err = sexpr_lval_err_new(fmt, ##__VA_ARGS__); \
+    sexpr_lval_free(args); \
+    return err; \
+  }
 
 lval_t* builtin_qexpr_head(lenv_t* lenv, lval_t *lval);
 lval_t* builtin_qexpr_tail(lenv_t* lenv, lval_t *lval);

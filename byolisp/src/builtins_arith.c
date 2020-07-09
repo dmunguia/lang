@@ -15,17 +15,17 @@ static lval_t* builtins_arith_eval_integer_operation(char *operator, long a, lon
 
     if (strcmp(operator, "/") == 0) { 
         return b == 0 ?
-            sexpr_lval_err_new(LVAL_ERR_DIV_ZERO) :
+            sexpr_lval_err_new("division by zero") :
             sexpr_lval_inum_new(a / b);
     }
 
     if (strcmp(operator, "^") == 0) { 
         return b < 0 ?
-            sexpr_lval_err_new(LVAL_ERR_NEG_EXP) :
+            sexpr_lval_err_new("exponent can't be negative") :
             sexpr_lval_inum_new(builtin_ipow(a, b)); 
     }
 
-    return sexpr_lval_err_new(LVAL_ERR_UNKNOWN_OP);
+    return sexpr_lval_err_new("unknown function '%s'", operator);
 }
 
 static lval_t* builtins_arith_eval_fp_operation(char *operator, double a, double b) 
@@ -41,17 +41,17 @@ static lval_t* builtins_arith_eval_fp_operation(char *operator, double a, double
 
     if (strcmp(operator, "/") == 0) { 
         return b == 0 ?
-            sexpr_lval_err_new(LVAL_ERR_DIV_ZERO) :
+            sexpr_lval_err_new("division by zero") :
             sexpr_lval_fnum_new(a / b);
     }
 
     if (strcmp(operator, "^") == 0) { 
         return b < 0 ?
-            sexpr_lval_err_new(LVAL_ERR_NEG_EXP) :
+            sexpr_lval_err_new("exponent can't be negative") :
             sexpr_lval_fnum_new(builtin_fpow(a, b)); 
     }
 
-    return sexpr_lval_err_new(LVAL_ERR_UNKNOWN_OP);
+    return sexpr_lval_err_new("unknown function '%s'", operator);
 }
 
 static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
@@ -59,7 +59,7 @@ static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
     for (int i = 0; i < operands->cells.count; i++) { // all data types must be numeric
         if (operands->cells.cell[i]->type != LVAL_TYPE_INUM && operands->cells.cell[i]->type != LVAL_TYPE_FNUM) {
             sexpr_lval_free(operands);
-            return sexpr_lval_err_new(LVAL_ERR_MISMATCH_DATATYPE);
+            return sexpr_lval_err_new("function '%s' expects numerical arguments", operator);
         }
     }
 
@@ -67,13 +67,13 @@ static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
 
     if ((strcmp(operator, "-") == 0) && operands->cells.count == 0) {
         if (operand_a->type == LVAL_TYPE_INUM) {
-            operand_a->value.integer_value = -(operand_a->value.integer_value);
+            operand_a->value.integer = -(operand_a->value.integer);
         } else if (operand_a->type == LVAL_TYPE_FNUM) {
-            operand_a->value.double_value = -(operand_a->value.double_value);
+            operand_a->value.floating_point = -(operand_a->value.floating_point);
         } else { // this should de impossible due to previous type check
             sexpr_lval_free(operand_a);
             sexpr_lval_free(operands);
-            return sexpr_lval_err_new(LVAL_ERR_UNKNOWN_OP);
+            return sexpr_lval_err_new("unknown function '%s'", operator);
         }
     }
 
@@ -82,19 +82,19 @@ static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
 
         // cast long to double when the expression mixes number types
         if (operand_a->type == LVAL_TYPE_FNUM && operand_b->type == LVAL_TYPE_INUM) {
-            long ivalue = operand_b->value.integer_value;
-            operand_b->value.double_value = (double) ivalue;
+            long ivalue = operand_b->value.integer;
+            operand_b->value.floating_point = (double) ivalue;
             operand_b->type = LVAL_TYPE_FNUM;
 
         } else if (operand_a->type == LVAL_TYPE_INUM && operand_b->type == LVAL_TYPE_FNUM) {
-            long ivalue = operand_a->value.integer_value;
-            operand_a->value.double_value = (double) ivalue;
+            long ivalue = operand_a->value.integer;
+            operand_a->value.floating_point = (double) ivalue;
             operand_a->type = LVAL_TYPE_FNUM;
         }
 
         if (operand_a->type == LVAL_TYPE_INUM) {
-            long a = operand_a->value.integer_value;
-            long b = operand_b->value.integer_value;
+            long a = operand_a->value.integer;
+            long b = operand_b->value.integer;
 
             lval_t *result = builtins_arith_eval_integer_operation(operator, a, b);
             if (result->type == LVAL_TYPE_ERR) {
@@ -103,13 +103,13 @@ static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
                 sexpr_lval_free(operands);
                 return result;
             } else {
-                operand_a->value.integer_value = result->value.integer_value;
+                operand_a->value.integer = result->value.integer;
                 sexpr_lval_free(result);
             }
 
         } else {
-            double a = operand_a->value.double_value;
-            double b = operand_b->value.double_value;
+            double a = operand_a->value.floating_point;
+            double b = operand_b->value.floating_point;
 
             lval_t *result = builtins_arith_eval_fp_operation(operator, a, b);
             if (result->type == LVAL_TYPE_ERR) {
@@ -118,7 +118,7 @@ static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
                 sexpr_lval_free(operands);
                 return result;
             } else {
-                operand_a->value.double_value = result->value.double_value;
+                operand_a->value.floating_point = result->value.floating_point;
                 sexpr_lval_free(result);
             }
         }
@@ -156,7 +156,7 @@ static lval_t* builtins_arith_eval_function(char *func, lval_t *lval)
     }
 
     if (result == NULL) {
-        result = sexpr_lval_err_new(LVAL_ERR_UNKNOWN_OP);
+        result = sexpr_lval_err_new("unknown function '%s'", func);
         sexpr_lval_free(lval);
     }
 

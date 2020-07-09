@@ -30,10 +30,10 @@ static lval_t* evaluator_evaluate_sexpr(lenv_t* lenv, lval_t* lval)
     if (funptr->type != LVAL_TYPE_FUN) {
         sexpr_lval_free(funptr);
         sexpr_lval_free(lval);
-        return sexpr_lval_err_new(LVAL_ERR_NOT_A_FUNCTION);
+        return sexpr_lval_err_new("not a function");
     }
 
-    lval_t *result = funptr->value.funptr_value(lenv, lval);
+    lval_t *result = funptr->value.funptr(lenv, lval);
     sexpr_lval_free(funptr);
 
     return result;
@@ -45,7 +45,7 @@ lval_t* evaluator_evaluate(lenv_t* lenv, lval_t* lval)
 
     switch(lval->type) {
         case LVAL_TYPE_SYM:
-            evaluated = lenv_get(lenv, lval->value.symbol_value);
+            evaluated = lenv_get(lenv, lval->value.symbol);
             sexpr_lval_free(lval);
             break;
         case LVAL_TYPE_SEXPR:

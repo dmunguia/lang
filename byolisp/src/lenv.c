@@ -41,7 +41,7 @@ lval_t* lenv_get(lenv_t* lenv, char* key)
         }
     }
 
-    return found ? copy : sexpr_lval_err_new(LVAL_ERR_UNBOUND_SYMBOL);
+    return found ? copy : sexpr_lval_err_new("unbound symbol '%s'", key);
 }
 
 void lenv_put(lenv_t* lenv, char* key, lval_t* value)
