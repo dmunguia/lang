@@ -12,12 +12,19 @@ typedef struct lenv_s lenv_t;
 
 typedef lval_t* (*lbuiltin)(lenv_t*, lval_t*);
 
+typedef struct {
+    lenv_t* lenv;
+    lval_t* args;
+    lval_t* expr;
+} lval_lambda_t;
+
 typedef union {
     long integer;
     double floating_point;
     char* symbol;
     char* error_message;
     lbuiltin funptr;
+    lval_lambda_t* lambda;
 } lval_value_t;
 
 typedef struct {
@@ -36,27 +43,17 @@ enum {
     LVAL_TYPE_FNUM,
     LVAL_TYPE_SYM,
     LVAL_TYPE_FUN,
+    LVAL_TYPE_LAMBDA,
     LVAL_TYPE_SEXPR,
     LVAL_TYPE_QEXPR,
     LVAL_TYPE_ERR
-};
-
-enum {
-    LVAL_ERR_DIV_ZERO,
-    LVAL_ERR_UNKNOWN_OP,
-    LVAL_ERR_NUM_TOO_LARGE,
-    LVAL_ERR_NEG_EXP,
-    LVAL_ERR_NOT_A_FUNCTION,
-    LVAL_ERR_MISMATCH_DATATYPE,
-    LVAL_ERR_INCORRECT_NUM_ARGS,
-    LVAL_ERR_NO_ARGS_PASSED,
-    LVAL_ERR_UNBOUND_SYMBOL
 };
 
 lval_t* sexpr_lval_inum_new(long num);
 lval_t* sexpr_lval_fnum_new(double num);
 lval_t* sexpr_lval_sym_new(char *sym);
 lval_t* sexpr_lval_funptr_new(lbuiltin funptr);
+lval_t* sexpr_lval_lambda_new(lval_t* args, lval_t* expr);
 lval_t* sexpr_lval_sexpr_new(void);
 lval_t* sexpr_lval_qexpr_new(void);
 lval_t* sexpr_lval_err_new(char* fmt, ...);

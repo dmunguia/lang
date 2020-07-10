@@ -11,6 +11,7 @@
 lenv_t* lenv_new()
 {
     lenv_t* lenv = malloc(sizeof(lenv_t));
+    lenv->parent = NULL;
     lenv->count = 0;
     lenv->symbols = NULL;
     lenv->values = NULL;
@@ -43,7 +44,13 @@ lval_t* lenv_get(lenv_t* lenv, char* key)
         }
     }
 
-    return found ? copy : sexpr_lval_err_new("unbound symbol '%s'", key);
+    if (found) {
+        return copy;
+    } else if (lenv->parent) {
+        return lenv_get(lenv->parent, key);
+    } else {
+        return sexpr_lval_err_new("unbound symbol '%s'", key);
+    }
 }
 
 bool lenv_put(lenv_t* lenv, char* key, lval_t* value)
@@ -74,6 +81,34 @@ bool lenv_put(lenv_t* lenv, char* key, lval_t* value)
     }
 
     return true;
+}
+
+bool lenv_def(lenv_t* lenv, char* key, lval_t* value)
+{
+    while (lenv->parent) {
+        lenv = lenv->parent;
+    }
+
+    return lenv_put(lenv, key, value);
+}
+
+lenv_t* lenv_copy(lenv_t* lenv)
+{
+    lenv_t* copy = malloc(sizeof(lenv_t));
+    copy->parent = lenv->parent;
+    copy->count = lenv->count;
+    copy->symbols = malloc(sizeof(char*) * copy->count);
+    copy->values = malloc(sizeof(lval_t*) * copy->count);
+    copy->is_builtin = malloc(sizeof(bool) * copy->count);
+
+    for (int i = 0; i < lenv->count; i++) {
+        copy->symbols[i] = malloc(strlen(lenv->symbols[i]) + 1);
+        strcpy(copy->symbols[i], lenv->symbols[i]);
+        copy->values[i] = sexpr_lval_copy(lenv->values[i]);
+        copy->is_builtin[i] = lenv->is_builtin[i];
+    }
+
+    return copy;
 }
 
 static void lenv_builtin_put(lenv_t* lenv, char* key, lval_t* value)
@@ -117,5 +152,7 @@ void lenv_add_builtins(lenv_t* lenv)
     lenv_add_builtin(lenv, "max", builtins_arith_max);
     lenv_add_builtin(lenv, "neg", builtins_arith_neg);
 
-    lenv_add_builtin(lenv, "def", builtins_lang_def);
+    lenv_add_builtin(lenv, "def", builtins_lang_bind_global);
+    lenv_add_builtin(lenv, "\\", builtins_lang_lambda);
+    lenv_add_builtin(lenv, "<-", builtins_lang_bind_local);
 }

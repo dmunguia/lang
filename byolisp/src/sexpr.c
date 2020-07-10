@@ -56,9 +56,23 @@ lval_t* sexpr_lval_sym_new(char* sym)
 
 lval_t* sexpr_lval_funptr_new(lbuiltin funptr)
 {
-    lval_t *val = malloc(sizeof(lval_t));
+    lval_t* val = malloc(sizeof(lval_t));
     val->type = LVAL_TYPE_FUN;
     val->value.funptr = funptr;
+
+    return val;
+}
+
+lval_t* sexpr_lval_lambda_new(lval_t* args, lval_t* expr)
+{
+    lval_lambda_t* lambda = malloc(sizeof(lval_lambda_t));
+    lambda->lenv = lenv_new();
+    lambda->args = args;
+    lambda->expr = expr;
+
+    lval_t* val = malloc(sizeof(lval_t));
+    val->type = LVAL_TYPE_LAMBDA;
+    val->value.lambda = lambda;
 
     return val;
 }
@@ -104,6 +118,13 @@ void sexpr_lval_free(lval_t* val)
     switch (val->type) {
         case LVAL_TYPE_SYM:
             free(val->value.symbol); 
+            break;
+
+        case LVAL_TYPE_LAMBDA:
+            lenv_free(val->value.lambda->lenv);
+            sexpr_lval_free(val->value.lambda->args);
+            sexpr_lval_free(val->value.lambda->expr);
+            free(val->value.lambda);
             break;
         
         case LVAL_TYPE_SEXPR:
@@ -174,6 +195,12 @@ lval_t* sexpr_lval_copy(lval_t *lval)
         case LVAL_TYPE_INUM: copy->value.integer = lval->value.integer; break;
         case LVAL_TYPE_FNUM: copy->value.floating_point = lval->value.floating_point; break;
         case LVAL_TYPE_FUN: copy->value.funptr = lval->value.funptr; break;
+        case LVAL_TYPE_LAMBDA:
+            copy->value.lambda = malloc(sizeof(lval_lambda_t));
+            copy->value.lambda->lenv = lenv_copy(lval->value.lambda->lenv);
+            copy->value.lambda->args = sexpr_lval_copy(lval->value.lambda->args);
+            copy->value.lambda->expr = sexpr_lval_copy(lval->value.lambda->expr);
+            break;
         case LVAL_TYPE_SYM:
             copy->value.symbol = malloc(strlen(lval->value.symbol) + 1);
             strcpy(copy->value.symbol, lval->value.symbol);

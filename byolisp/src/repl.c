@@ -30,6 +30,13 @@ static void repl_lval_print(lval_t *lval)
         case LVAL_TYPE_INUM: printf("%li", lval->value.integer); break;
         case LVAL_TYPE_FNUM: printf("%f", lval->value.floating_point); break;
         case LVAL_TYPE_FUN: printf("<function %p>", lval->value.funptr); break;
+        case LVAL_TYPE_LAMBDA: 
+            printf("(\\ "); 
+            repl_lval_print(lval->value.lambda->args); 
+            putchar(' '); 
+            repl_lval_print(lval->value.lambda->expr); 
+            putchar(')'); 
+            break;
         case LVAL_TYPE_SYM: printf("%s", lval->value.symbol); break;
         case LVAL_TYPE_SEXPR: repl_lval_sexpr_print(lval, '(', ')'); break;
         case LVAL_TYPE_QEXPR: repl_lval_sexpr_print(lval, '{', '}'); break;
