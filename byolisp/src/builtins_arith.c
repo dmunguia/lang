@@ -1,6 +1,7 @@
-#include "builtins_arith.h";
-#include "lenv.h";
-#include "sexpr.h";
+#include "builtins.h"
+#include "builtins_arith.h"
+#include "lenv.h"
+#include "sexpr.h"
 
 static lval_t* builtins_arith_eval_integer_operation(char *operator, long a, long b) 
 {
@@ -133,25 +134,9 @@ static lval_t* builtins_arith_eval_operator(char *operator, lval_t *operands)
 static lval_t* builtins_arith_eval_function(char *func, lval_t *lval) 
 {
     lval_t *result = NULL;
-    if (strcmp("list", func) == 0) {
-        result = builtin_qexpr_list(lval);
-    } else if (strcmp("head", func) == 0) {
-        result = builtin_qexpr_head(lval);
-    } else if (strcmp("tail", func) == 0) {
-        result = builtin_qexpr_tail(lval);
-    } else if (strcmp("join", func) == 0) {
-        result = builtin_qexpr_join(lval);
-    } else if (strcmp("eval", func) == 0) {
-        result = builtin_qexpr_eval(lval);
-    } else if (strcmp("cons", func) == 0) {
-        result = builtin_qexpr_cons(lval);
-    } else if (strcmp("len", func) == 0) {
-        result = builtin_qexpr_len(lval);
-    } else if (strcmp("init", func) == 0) {
-        result = builtin_qexpr_init(lval);
-    } else if (strcmp("min", func) == 0 ||
-               strcmp("max", func) == 0 ||
-               strstr("+-*/%^", func)) {
+    if (strcmp("min", func) == 0 ||
+        strcmp("max", func) == 0 ||
+        strstr("+-*/%^", func)) {
         result = builtins_arith_eval_operator(func, lval);
     }
 

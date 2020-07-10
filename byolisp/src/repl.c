@@ -37,6 +37,24 @@ static void repl_lval_print(lval_t *lval)
     }
 }
 
+static void repl_lenv_print(lenv_t* lenv)
+{
+    for (int i = 0; i < lenv->count; i++) {
+        char* symbol = lenv->symbols[i];
+        lval_t* lval = lenv->values[i];
+
+        switch (lval->type) {
+            case LVAL_TYPE_INUM: printf("%s: %li\n", symbol, lval->value.integer); break;
+            case LVAL_TYPE_FNUM: printf("%s: %f\n", symbol, lval->value.floating_point); break;
+            case LVAL_TYPE_FUN: printf("%s: <function %p>\n", symbol, lval->value.funptr); break;
+            case LVAL_TYPE_SYM: printf("%s: %s\n", symbol, lval->value.symbol); break;
+            case LVAL_TYPE_SEXPR: printf("%s: ", symbol); repl_lval_sexpr_print(lval, '(', ')'); putchar('\n'); break;
+            case LVAL_TYPE_QEXPR: printf("%s: ", symbol); repl_lval_sexpr_print(lval, '{', '}'); putchar('\n'); break;
+            case LVAL_TYPE_ERR: printf("%s: %s\n", symbol, lval->value.error_message); break;
+        }
+    }
+}
+
 static void repl_lval_println(lval_t *lval)
 {
     repl_lval_print(lval);
@@ -57,13 +75,21 @@ int main(int argc, char** argv)
     while ((input = readline("byolisp> ")) != NULL) {
         add_history(input);
 
-        parser_result_t result = parser_parse(input, grammar);
-        lval_t *lval = sexpr_build_from_ast(result.result_data.output);
-        lval = evaluator_evaluate(lenv, lval);
-        repl_lval_println(lval);
-        sexpr_lval_free(lval);
+        if (strcmp(input, "env") == 0) {
+            repl_lenv_print(lenv);
+            free(input);
+        } else if (strcmp(input, "exit") == 0) {
+            free(input);
+            break;
+        } else {
+            parser_result_t result = parser_parse(input, grammar);
+            lval_t *lval = sexpr_build_from_ast(result.result_data.output);
+            lval = evaluator_evaluate(lenv, lval);
+            repl_lval_println(lval);
+            sexpr_lval_free(lval);
 
-        free(input);
+            free(input);
+        }
     }
 
     puts("\nexit\n");
