@@ -82,7 +82,7 @@ lval_t* builtins_lang_call(lenv_t* lenv, lval_t* lambda, lval_t* lval)
             if (lambda->value.lambda->args->cells.count != 1) {
                 sexpr_lval_free(lval);
                 return sexpr_lval_err_new("Function format invalid. "
-                    "Symbol '&' for followed by single symbol.");
+                    "Symbol '&' should be followed by single symbol.");
             }
 
             lval_t* next_symbol = sexpr_lval_pop(lambda->value.lambda->args, 0);
@@ -129,4 +129,28 @@ lval_t* builtins_lang_call(lenv_t* lenv, lval_t* lambda, lval_t* lval)
     } else {
         return sexpr_lval_copy(lambda); // curried function
     }
+}
+
+lval_t* builtins_lang_fun(lenv_t* lenv, lval_t* lval)
+{
+    QEXPR_ASSERT_BUILTIN_NARGS("fun", lval, lval->cells.count, 2);
+    QEXPR_ASSERT_BUILTIN_TYPES("fun", lval, lval->cells.cell[0]->type, LVAL_TYPE_QEXPR);
+    QEXPR_ASSERT_BUILTIN_TYPES("fun", lval, lval->cells.cell[1]->type, LVAL_TYPE_QEXPR);
+
+    if (lval->cells.cell[0]->cells.count == 0) {
+        lval_t* err = sexpr_lval_err_new("Function declaration requires a name.");
+        sexpr_lval_free(lval);
+        return err;
+    }
+
+    for (int i = 0; i < lval->cells.cell[0]->cells.count; i++) {
+        QEXPR_ASSERT_BUILTIN_TYPES("fun", lval, lval->cells.cell[0]->cells.cell[i]->type, LVAL_TYPE_SYM);
+    }
+
+    lval_t* fn_name = sexpr_lval_pop(lval->cells.cell[0], 0);
+    lval_t* lambda = sexpr_lval_lambda_new(lval->cells.cell[0], lval->cells.cell[1]);
+
+    lenv_put(lenv, fn_name->value.symbol, lambda);
+
+    return lambda;
 }

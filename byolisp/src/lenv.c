@@ -153,6 +153,7 @@ void lenv_add_builtins(lenv_t* lenv)
     lenv_add_builtin(lenv, "neg", builtins_arith_neg);
 
     lenv_add_builtin(lenv, "def", builtins_lang_bind_global);
+    lenv_add_builtin(lenv, "fun", builtins_lang_fun);
     lenv_add_builtin(lenv, "\\", builtins_lang_lambda);
     lenv_add_builtin(lenv, "<-", builtins_lang_bind_local);
 }
