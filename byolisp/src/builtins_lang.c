@@ -67,7 +67,8 @@ lval_t* builtins_lang_call(lenv_t* lenv, lval_t* lambda, lval_t* lval)
     int given = lval->cells.count;
     int required = lambda->value.lambda->args->cells.count;
 
-    while (lval->cells.count > 0) {
+    bool processed_varargs = false;
+    while (lval->cells.count > 0 && !processed_varargs) {
 
         if (lambda->value.lambda->args->cells.count == 0) {
             sexpr_lval_free(lval);
@@ -75,14 +76,48 @@ lval_t* builtins_lang_call(lenv_t* lenv, lval_t* lambda, lval_t* lval)
         }
 
         lval_t* symbol = sexpr_lval_pop(lambda->value.lambda->args, 0);
-        lval_t* value = sexpr_lval_pop(lval, 0);
+
+        if (strcmp(symbol->value.symbol, "&") == 0) {
+            
+            if (lambda->value.lambda->args->cells.count != 1) {
+                sexpr_lval_free(lval);
+                return sexpr_lval_err_new("Function format invalid. "
+                    "Symbol '&' for followed by single symbol.");
+            }
+
+            lval_t* next_symbol = sexpr_lval_pop(lambda->value.lambda->args, 0);
+            lenv_put(lambda->value.lambda->lenv, next_symbol->value.symbol, builtin_qexpr_list(lenv, lval));
+            sexpr_lval_free(symbol);
+            sexpr_lval_free(next_symbol);
+            processed_varargs = true;
+        } else {
+            lval_t* value = sexpr_lval_pop(lval, 0);
+
+            lenv_put(lambda->value.lambda->lenv, symbol->value.symbol, value);
+            sexpr_lval_free(symbol);
+            sexpr_lval_free(value);
+        }
+    }
+
+    sexpr_lval_free(lval);
+
+    if (lambda->value.lambda->args->cells.count > 0 && 
+        strcmp(lambda->value.lambda->args->cells.cell[0]->value.symbol, "&") == 0) {
+        
+        if (lambda->value.lambda->args->cells.count != 2) {
+            return sexpr_lval_err_new("Function format invalid. "
+                "Symbol '&' not followed by single symbol.");
+        }
+
+        sexpr_lval_free(sexpr_lval_pop(lambda->value.lambda->args, 0));
+
+        lval_t* symbol = sexpr_lval_pop(lambda->value.lambda->args, 0);
+        lval_t* value = sexpr_lval_qexpr_new();
 
         lenv_put(lambda->value.lambda->lenv, symbol->value.symbol, value);
         sexpr_lval_free(symbol);
         sexpr_lval_free(value);
     }
-
-    sexpr_lval_free(lval);
 
     if (lambda->value.lambda->args->cells.count == 0) {
         lambda->value.lambda->lenv->parent = lenv;
