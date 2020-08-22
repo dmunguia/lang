@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "builtins.h"
 #include "builtins_arith.h"
 #include "lenv.h"

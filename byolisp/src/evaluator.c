@@ -33,10 +33,12 @@ static lval_t* evaluator_evaluate_sexpr(lenv_t* lenv, lval_t* lval)
         case LVAL_TYPE_FUN:
             result = funptr->value.funptr(lenv, lval);
             sexpr_lval_free(funptr);
+            break;
         
         case LVAL_TYPE_LAMBDA:
             result = builtins_lang_call(lenv, funptr, lval);
             sexpr_lval_free(funptr);
+            break;
             
         default:
             result = sexpr_lval_err_new("S-Expression starts with incorrect type. Expected function or lambda expression, got %s",

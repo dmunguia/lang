@@ -46,7 +46,7 @@ lval_t* builtins_lang_bind_local(lenv_t* lenv, lval_t* lval)
 
 lval_t* builtins_lang_lambda(lenv_t* lenv, lval_t* lval)
 {
-    QEXPR_ASSERT_BUILTIN_NARGS("\\", lval, lval->cells.count-1, 2);
+    QEXPR_ASSERT_BUILTIN_NARGS("\\", lval, lval->cells.count, 2);
     QEXPR_ASSERT_BUILTIN_TYPES("\\", lval, lval->cells.cell[0]->type, LVAL_TYPE_QEXPR);
     QEXPR_ASSERT_BUILTIN_TYPES("\\", lval, lval->cells.cell[1]->type, LVAL_TYPE_QEXPR);
 
