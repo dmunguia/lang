@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,13 +11,13 @@ static lval_t* sexpr_ast_to_number(mpc_ast_t *ast)
         double number = strtod(ast->contents, NULL);
         return errno != ERANGE ? 
             sexpr_lval_fnum_new(number) : 
-            sexpr_lval_err_new(LVAL_ERR_NUM_TOO_LARGE);
+            sexpr_lval_err_new("number too large %s", ast->contents);
     } else {
         errno = 0; // macro
         long number = strtol(ast->contents, NULL, 10);
         return errno != ERANGE ? 
             sexpr_lval_inum_new(number) : 
-            sexpr_lval_err_new(LVAL_ERR_NUM_TOO_LARGE);
+            sexpr_lval_err_new("number too large %s", ast->contents);
     }
 }
 
@@ -29,7 +30,7 @@ lval_t* sexpr_lval_inum_new(long num)
 {
     lval_t* val = malloc(sizeof(lval_t));
     val->type = LVAL_TYPE_INUM;
-    val->value.integer_value = num;
+    val->value.integer = num;
 
     return val;
 }
@@ -38,7 +39,7 @@ lval_t* sexpr_lval_fnum_new(double num)
 {
     lval_t* val = malloc(sizeof(lval_t));
     val->type = LVAL_TYPE_FNUM;
-    val->value.double_value = num;
+    val->value.floating_point = num;
 
     return val;
 }
@@ -47,17 +48,31 @@ lval_t* sexpr_lval_sym_new(char* sym)
 {
     lval_t* val = malloc(sizeof(lval_t));
     val->type = LVAL_TYPE_SYM;
-    val->value.symbol_value = malloc(strlen(sym) + 1);
-    strcpy(val->value.symbol_value, sym);
+    val->value.symbol = malloc(strlen(sym) + 1);
+    strcpy(val->value.symbol, sym);
 
     return val;
 }
 
 lval_t* sexpr_lval_funptr_new(lbuiltin funptr)
 {
-    lval_t *val = malloc(sizeof(lval_t));
+    lval_t* val = malloc(sizeof(lval_t));
     val->type = LVAL_TYPE_FUN;
-    val->value.funptr_value = funptr;
+    val->value.funptr = funptr;
+
+    return val;
+}
+
+lval_t* sexpr_lval_lambda_new(lval_t* args, lval_t* expr)
+{
+    lval_lambda_t* lambda = malloc(sizeof(lval_lambda_t));
+    lambda->lenv = lenv_new();
+    lambda->args = args;
+    lambda->expr = expr;
+
+    lval_t* val = malloc(sizeof(lval_t));
+    val->type = LVAL_TYPE_LAMBDA;
+    val->value.lambda = lambda;
 
     return val;
 }
@@ -82,11 +97,18 @@ lval_t* sexpr_lval_qexpr_new(void)
     return val;
 }
 
-lval_t* sexpr_lval_err_new(int err_code) 
+lval_t* sexpr_lval_err_new(char* fmt, ...) 
 {
     lval_t* val = malloc(sizeof(lval_t));
     val->type = LVAL_TYPE_ERR;
-    val->err_code = err_code;
+
+    // format string and store result in lval
+    va_list va;
+    va_start(va, fmt);
+    val->value.error_message = malloc(512 * sizeof(char));
+    vsnprintf(val->value.error_message, 511, fmt, va);
+    val->value.error_message = realloc(val->value.error_message, strlen(val->value.error_message) + 1);
+    va_end(va);
 
     return val;
 }
@@ -95,7 +117,14 @@ void sexpr_lval_free(lval_t* val)
 {
     switch (val->type) {
         case LVAL_TYPE_SYM:
-            free(val->value.symbol_value); 
+            free(val->value.symbol); 
+            break;
+
+        case LVAL_TYPE_LAMBDA:
+            lenv_free(val->value.lambda->lenv);
+            sexpr_lval_free(val->value.lambda->args);
+            sexpr_lval_free(val->value.lambda->expr);
+            free(val->value.lambda);
             break;
         
         case LVAL_TYPE_SEXPR:
@@ -163,13 +192,22 @@ lval_t* sexpr_lval_copy(lval_t *lval)
     copy->type = lval->type;
 
     switch(lval->type) {
-        case LVAL_TYPE_INUM: copy->value.integer_value = lval->value.integer_value; break;
-        case LVAL_TYPE_FNUM: copy->value.double_value = lval->value.double_value; break;
-        case LVAL_TYPE_FUN: copy->value.funptr_value = lval->value.funptr_value; break;
-        case LVAL_TYPE_ERR: copy->err_code = lval->err_code; break;
+        case LVAL_TYPE_INUM: copy->value.integer = lval->value.integer; break;
+        case LVAL_TYPE_FNUM: copy->value.floating_point = lval->value.floating_point; break;
+        case LVAL_TYPE_FUN: copy->value.funptr = lval->value.funptr; break;
+        case LVAL_TYPE_LAMBDA:
+            copy->value.lambda = malloc(sizeof(lval_lambda_t));
+            copy->value.lambda->lenv = lenv_copy(lval->value.lambda->lenv);
+            copy->value.lambda->args = sexpr_lval_copy(lval->value.lambda->args);
+            copy->value.lambda->expr = sexpr_lval_copy(lval->value.lambda->expr);
+            break;
         case LVAL_TYPE_SYM:
-            copy->value.symbol_value = malloc(strlen(lval->value.symbol_value) + 1);
-            strcpy(copy->value.symbol_value, lval->value.symbol_value);
+            copy->value.symbol = malloc(strlen(lval->value.symbol) + 1);
+            strcpy(copy->value.symbol, lval->value.symbol);
+            break;
+        case LVAL_TYPE_ERR:
+            copy->value.error_message = malloc(strlen(lval->value.error_message) + 1);
+            strcpy(copy->value.error_message, lval->value.error_message);
             break;
         
         case LVAL_TYPE_SEXPR:
@@ -219,4 +257,18 @@ lval_t* sexpr_build_from_ast(mpc_ast_t *ast)
     }
 
     return lval;
+}
+
+char* sexpr_type_to_string(int type) 
+{
+  switch(type) {
+      case LVAL_TYPE_INUM: return "Integer number";
+      case LVAL_TYPE_FNUM: return "Floating-point number";
+      case LVAL_TYPE_SYM: return "Symbol";
+      case LVAL_TYPE_FUN: return "Function";
+      case LVAL_TYPE_SEXPR: return "S-Expression";
+      case LVAL_TYPE_QEXPR: return "Q-Expression";
+      case LVAL_TYPE_ERR: return "Error";
+      default: return "Unknown";
+  }
 }
