@@ -21,6 +21,15 @@ static lval_t* sexpr_ast_to_number(mpc_ast_t *ast)
     }
 }
 
+static lval_t* sexpr_ast_to_boolean(mpc_ast_t *ast) 
+{
+    if (strcmp(ast->contents, "true") == 0) {
+        return sexpr_lval_bool_new(true);
+    } else {
+        return sexpr_lval_bool_new(false);
+    }
+}
+
 static lval_t* sexpr_ast_to_symbol(mpc_ast_t *ast)
 {
     return sexpr_lval_sym_new(ast->contents);
@@ -50,6 +59,15 @@ lval_t* sexpr_lval_sym_new(char* sym)
     val->type = LVAL_TYPE_SYM;
     val->value.symbol = malloc(strlen(sym) + 1);
     strcpy(val->value.symbol, sym);
+
+    return val;
+}
+
+lval_t* sexpr_lval_bool_new(bool boolean)
+{
+    lval_t* val = malloc(sizeof(lval_t));
+    val->type = LVAL_TYPE_BOOL;
+    val->value.boolean = boolean;
 
     return val;
 }
@@ -194,6 +212,7 @@ lval_t* sexpr_lval_copy(lval_t *lval)
     switch(lval->type) {
         case LVAL_TYPE_INUM: copy->value.integer = lval->value.integer; break;
         case LVAL_TYPE_FNUM: copy->value.floating_point = lval->value.floating_point; break;
+        case LVAL_TYPE_BOOL: copy->value.boolean = lval->value.boolean; break;
         case LVAL_TYPE_FUN: copy->value.funptr = lval->value.funptr; break;
         case LVAL_TYPE_LAMBDA:
             copy->value.lambda = malloc(sizeof(lval_lambda_t));
@@ -227,6 +246,10 @@ lval_t* sexpr_build_from_ast(mpc_ast_t *ast)
 {
     if (strstr(ast->tag, "number")) {
         return sexpr_ast_to_number(ast);
+    }
+
+    if (strstr(ast->tag, "boolean")) {
+        return sexpr_ast_to_boolean(ast);
     }
 
     if (strstr(ast->tag, "symbol")) {
@@ -264,6 +287,7 @@ char* sexpr_type_to_string(int type)
   switch(type) {
       case LVAL_TYPE_INUM: return "Integer number";
       case LVAL_TYPE_FNUM: return "Floating-point number";
+      case LVAL_TYPE_BOOL: return "Boolean";
       case LVAL_TYPE_SYM: return "Symbol";
       case LVAL_TYPE_FUN: return "Function";
       case LVAL_TYPE_SEXPR: return "S-Expression";

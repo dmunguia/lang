@@ -8,6 +8,7 @@ parser_grammar_t parser_build_grammar()
     parser_grammar_t grammar;
 
     mpc_parser_t *Number = mpc_new("number");
+    mpc_parser_t *Boolean = mpc_new("boolean");
     mpc_parser_t *Symbol = mpc_new("symbol");
     mpc_parser_t *SExpr = mpc_new("sexpr");
     mpc_parser_t *QExpr = mpc_new("qexpr");
@@ -17,13 +18,14 @@ parser_grammar_t parser_build_grammar()
     mpca_lang(MPCA_LANG_DEFAULT,
         "                                                                    \
             number : /-?[0-9]+(\\.[0-9]*)?/ ;                                \
+            boolean: 'true' | 'false' ;                                      \
             symbol : /[a-zA-Z0-9_\\+\\-\\*\\/\\\\=<>!&\\^%]+/ ;              \
             sexpr  : '(' <expr>* ')' ;                                       \
             qexpr  : '{' <expr>* '}' ;                                       \
             expr   : <number> | <symbol> | <sexpr> | <qexpr> ;               \
             byolisp: /^/ <expr>* /$/ ;                                       \
         ", 
-        Number, Symbol, SExpr, QExpr, Expr, BYOLisp, NULL);
+        Number, Boolean, Symbol, SExpr, QExpr, Expr, BYOLisp, NULL);
 
     grammar.Number = Number;
     grammar.Symbol = Symbol;

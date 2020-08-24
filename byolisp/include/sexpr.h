@@ -22,6 +22,7 @@ typedef union {
     long integer;
     double floating_point;
     char* symbol;
+    bool boolean;
     char* error_message;
     lbuiltin funptr;
     lval_lambda_t* lambda;
@@ -42,6 +43,7 @@ enum {
     LVAL_TYPE_INUM,
     LVAL_TYPE_FNUM,
     LVAL_TYPE_SYM,
+    LVAL_TYPE_BOOL,
     LVAL_TYPE_FUN,
     LVAL_TYPE_LAMBDA,
     LVAL_TYPE_SEXPR,
@@ -52,6 +54,7 @@ enum {
 lval_t* sexpr_lval_inum_new(long num);
 lval_t* sexpr_lval_fnum_new(double num);
 lval_t* sexpr_lval_sym_new(char *sym);
+lval_t* sexpr_lval_bool_new(bool boolean);
 lval_t* sexpr_lval_funptr_new(lbuiltin funptr);
 lval_t* sexpr_lval_lambda_new(lval_t* args, lval_t* expr);
 lval_t* sexpr_lval_sexpr_new(void);

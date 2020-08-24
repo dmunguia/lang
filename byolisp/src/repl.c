@@ -29,6 +29,7 @@ static void repl_lval_print(lval_t *lval)
     switch (lval->type) {
         case LVAL_TYPE_INUM: printf("%li", lval->value.integer); break;
         case LVAL_TYPE_FNUM: printf("%f", lval->value.floating_point); break;
+        case LVAL_TYPE_BOOL: printf("%s", lval->value.boolean ? "true" : "false"); break;
         case LVAL_TYPE_FUN: printf("<function %p>", lval->value.funptr); break;
         case LVAL_TYPE_LAMBDA: 
             printf("(\\ "); 
@@ -53,6 +54,7 @@ static void repl_lenv_print(lenv_t* lenv)
         switch (lval->type) {
             case LVAL_TYPE_INUM: printf("%s: %li\n", symbol, lval->value.integer); break;
             case LVAL_TYPE_FNUM: printf("%s: %f\n", symbol, lval->value.floating_point); break;
+            case LVAL_TYPE_BOOL: printf("%s: %s\n", symbol, lval->value.boolean ? "true" : "false"); break;
             case LVAL_TYPE_FUN: printf("%s: <function %p>\n", symbol, lval->value.funptr); break;
             case LVAL_TYPE_SYM: printf("%s: %s\n", symbol, lval->value.symbol); break;
             case LVAL_TYPE_SEXPR: printf("%s: ", symbol); repl_lval_sexpr_print(lval, '(', ')'); putchar('\n'); break;
