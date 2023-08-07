@@ -18,16 +18,17 @@ parser_grammar_t parser_build_grammar()
     mpca_lang(MPCA_LANG_DEFAULT,
         "                                                                    \
             number : /-?[0-9]+(\\.[0-9]*)?/ ;                                \
-            boolean: 'true' | 'false' ;                                      \
+            boolean: \"true\" | \"false\"  ;                                 \
             symbol : /[a-zA-Z0-9_\\+\\-\\*\\/\\\\=<>!&\\^%]+/ ;              \
             sexpr  : '(' <expr>* ')' ;                                       \
             qexpr  : '{' <expr>* '}' ;                                       \
-            expr   : <number> | <symbol> | <sexpr> | <qexpr> ;               \
+            expr   : <number> | <boolean> | <symbol> | <sexpr> | <qexpr> ;   \
             byolisp: /^/ <expr>* /$/ ;                                       \
         ", 
         Number, Boolean, Symbol, SExpr, QExpr, Expr, BYOLisp, NULL);
 
     grammar.Number = Number;
+    grammar.Boolean = Boolean;
     grammar.Symbol = Symbol;
     grammar.SExpr = SExpr;
     grammar.QExpr = QExpr;
@@ -51,7 +52,7 @@ parser_result_t parser_parse(const char *input, parser_grammar_t grammar)
 
 void parser_free_grammar(parser_grammar_t grammar)
 {
-    mpc_cleanup(6, grammar.Number, grammar.Symbol, grammar.SExpr, grammar.QExpr, grammar.Expr, grammar.BYOLisp);
+    mpc_cleanup(6, grammar.Number, grammar.Boolean, grammar.Symbol, grammar.SExpr, grammar.QExpr, grammar.Expr, grammar.BYOLisp);
 }
 
 void parser_report_output(parser_result_t result) 
