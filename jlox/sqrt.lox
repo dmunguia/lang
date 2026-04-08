@@ -1,0 +1,23 @@
+fun absolute(x) {
+    if (x >= 0) {
+        return x;
+    } else {
+        return -x;
+    }
+}
+
+fun sqrt(x, epsilon) {
+    if (x < 0) {
+        print "sqrt is not defined for negatives";
+        return;
+    }
+
+    var aprox = x / 2;
+    var error = (aprox * aprox) - x
+    while (absolute(error) > epsilon) {
+        aprox = aprox - (error / (2 * aprox))
+        error = (aprox * aprox) - x
+    }
+
+    return aprox;
+}
